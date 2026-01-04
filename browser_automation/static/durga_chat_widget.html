@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ask Durga - Chat Widget</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-header .avatar {
+            width: 45px;
+            height: 45px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .chat-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .chat-header p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            margin-left: auto;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #f8fafc;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.bot {
+            background: white;
+            align-self: flex-start;
+            border: 1px solid #e2e8f0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.user {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-content {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .message-actions {
+            margin-top: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+        }
+
+        .action-btn.secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .action-btn.secondary:hover {
+            background: #e2e8f0;
+            box-shadow: none;
+        }
+
+        .email-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 8px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .email-card:hover {
+            border-color: #4f46e5;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+        }
+
+        .email-card .sender {
+            font-weight: 600;
+            font-size: 14px;
+            color: #1e293b;
+        }
+
+        .email-card .subject {
+            font-size: 13px;
+            color: #475569;
+            margin: 4px 0;
+        }
+
+        .email-card .snippet {
+            font-size: 12px;
+            color: #94a3b8;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .email-card .date {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+
+        .email-card .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .email-card .quick-actions button {
+            padding: 4px 12px;
+            font-size: 11px;
+            border-radius: 12px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-card .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .chat-input-area {
+            padding: 15px 20px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: #4f46e5;
+        }
+
+        .send-btn {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            width: fit-content;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #94a3b8;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .loading.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="avatar">🤖</div>
+            <div>
+                <h2>Ask Durga</h2>
+                <p>AI Email Assistant</p>
+            </div>
+            <div class="status-dot"></div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <!-- Welcome message -->
+            <div class="message bot">
+                <div class="message-content">
+                    Hi! I'm Durga, your AI email assistant. How can I help you today?
+                </div>
+                <div class="message-actions">
+                    <button class="action-btn" onclick="executeAction('/api/inbox')">
+                        📥 View Inbox
+                    </button>
+                    <button class="action-btn secondary" onclick="executeAction('/api/campaign/status')">
+                        📊 Campaign Status
+                    </button>
+                    <button class="action-btn secondary" onclick="executeAction('/api/analytics')">
+                        📈 Analytics
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Ask me anything..." onkeypress="handleKeyPress(event)">
+            <button class="send-btn" onclick="sendMessage()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3004';
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+
+        function addMessage(content, isUser = false) {
+            const div = document.createElement('div');
+            div.className = `message ${isUser ? 'user' : 'bot'}`;
+            div.innerHTML = `<div class="message-content">${content}</div>`;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return div;
+        }
+
+        function addTypingIndicator() {
+            const div = document.createElement('div');
+            div.className = 'typing-indicator';
+            div.id = 'typingIndicator';
+            div.innerHTML = '<span></span><span></span><span></span>';
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        function renderResponse(data) {
+            removeTypingIndicator();
+
+            let html = '';
+
+            // If there's a message
+            if (data.message) {
+                html += `<div class="message-content">${data.message}</div>`;
+            }
+
+            // If there are emails
+            if (data.emails && data.emails.length > 0) {
+                html += `<div class="message-content">Found ${data.count} emails:</div>`;
+                data.emails.slice(0, 5).forEach(email => {
+                    html += `
+                        <div class="email-card" onclick="executeAction('/api/inbox/${email.id}')">
+                            <div class="sender">${email.sender || 'Unknown'}</div>
+                            <div class="subject">${email.subject || 'No Subject'}</div>
+                            <div class="snippet">${email.snippet || ''}</div>
+                            <div class="date">${email.date || ''}</div>
+                            <div class="quick-actions">
+                                <button class="action-btn" onclick="event.stopPropagation(); executeAction('/api/inbox/reply', {email_id: ${email.id}, use_ai: true})">
+                                    ✨ AI Reply
+                                </button>
+                                <button class="action-btn secondary" onclick="event.stopPropagation(); executeAction('/api/inbox/${email.id}')">
+                                    👁️ View
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // If there's email detail
+            if (data.email) {
+                html += `
+                    <div class="email-card">
+                        <div class="sender">From: ${data.email.sender}</div>
+                        <div class="subject"><strong>${data.email.subject}</strong></div>
+                        <div style="margin-top: 10px; font-size: 13px; color: #475569;">${data.email.body}</div>
+                        <div class="date">${data.email.date}</div>
+                    </div>
+                `;
+            }
+
+            // If there's AI suggestion
+            if (data.ai_suggestion) {
+                html += `
+                    <div class="message-content">
+                        <strong>AI Suggested Reply:</strong>
+                        <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-top: 8px; font-size: 13px;">
+                            ${data.ai_suggestion}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // If there's campaign status
+            if (data.campaign) {
+                html += `
+                    <div class="message-content">Campaign Status:</div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="value">${data.campaign.status || 'Idle'}</div>
+                            <div class="label">Status</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="value">${data.campaign.emails_sent || '0'}</div>
+                            <div class="label">Emails Sent</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="value">${data.campaign.progress || 0}%</div>
+                            <div class="label">Progress</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="value">${data.campaign.errors || '0'}</div>
+                            <div class="label">Errors</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // If there's analytics
+            if (data.analytics) {
+                html += `
+                    <div class="message-content">Analytics Overview:</div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="value">${data.analytics.sent || '0'}</div>
+                            <div class="label">Total Sent</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="value">${data.analytics.campaigns || '0'}</div>
+                            <div class="label">Campaigns</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="value">${data.analytics.rate || '0%'}</div>
+                            <div class="label">Success Rate</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="value">${data.analytics.avg || '0'}</div>
+                            <div class="label">Avg per Campaign</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Add action buttons
+            if (data.actions && data.actions.length > 0) {
+                html += '<div class="message-actions">';
+                data.actions.forEach((action, index) => {
+                    const btnClass = index === 0 ? 'action-btn' : 'action-btn secondary';
+                    const params = action.params ? JSON.stringify(action.params) : '{}';
+                    html += `
+                        <button class="${btnClass}" onclick="executeAction('${action.endpoint}', ${params})">
+                            ${action.label}
+                        </button>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            // Error handling
+            if (data.error) {
+                html = `<div class="message-content" style="color: #ef4444;">Error: ${data.error}</div>`;
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            messageDiv.innerHTML = html;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function executeAction(endpoint, params = {}) {
+            addTypingIndicator();
+
+            try {
+                const method = endpoint.includes('/api/inbox/') && !endpoint.includes('reply') ? 'GET' :
+                              Object.keys(params).length > 0 ? 'POST' : 'GET';
+
+                const options = {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' }
+                };
+
+                if (method === 'POST') {
+                    options.body = JSON.stringify(params);
+                }
+
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await response.json();
+                renderResponse(data);
+            } catch (error) {
+                removeTypingIndicator();
+                addMessage(`Sorry, I couldn't connect to the server. Error: ${error.message}`);
+            }
+        }
+
+        async function sendMessage() {
+            const query = chatInput.value.trim();
+            if (!query) return;
+
+            addMessage(query, true);
+            chatInput.value = '';
+            addTypingIndicator();
+
+            try {
+                const response = await fetch(`${API_BASE}/api/ask`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                const data = await response.json();
+                renderResponse(data);
+            } catch (error) {
+                removeTypingIndicator();
+                addMessage(`Sorry, I couldn't process your request. Error: ${error.message}`);
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Initial health check
+        fetch(`${API_BASE}/health`)
+            .then(r => r.json())
+            .then(data => console.log('Durga Controller:', data))
+            .catch(e => console.error('Controller not available:', e));
+    </script>
+</body>
+</html>
